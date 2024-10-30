@@ -1,0 +1,294 @@
+package com.mycompany.grocery;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+class Product {
+    private String name;
+    private double price;
+    private int quantity;
+
+    public Product(String name, double price, int quantity) {
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+}
+
+class Inventory {
+    private List<Product> products;
+
+    public Inventory() {
+        products = new ArrayList<>();
+    }
+
+    public void addProduct(String name, double price, int quantity) {
+        products.add(new Product(name, price, quantity));
+    }
+
+    public Product findProduct(String name) {
+        for (Product product : products) {
+            if (product.getName().equalsIgnoreCase(name)) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    public void updateStock(String name, int quantity) {
+        Product product = findProduct(name);
+        if (product != null) {
+            product.setQuantity(quantity);
+            System.out.println("✅ Updated " + name + " stock to " + quantity);
+        } else {
+            System.out.println("❌ Product not found in inventory.");
+        }
+    }
+
+    public void removeProduct(String name) {
+        Product product = findProduct(name);
+        if (product != null) {
+            products.remove(product);
+            System.out.println("✅ " + name + " removed from inventory.");
+        } else {
+            System.out.println("❌ Product not found in inventory.");
+        }
+    }
+
+    public void showInventory() {
+        System.out.println("\n📦 Available Products in Inventory:");
+        System.out.println("--------------------------------------------------");
+        if (products.isEmpty()) {
+            System.out.println("Inventory is empty.");
+        } else {
+            for (Product p : products) {
+                System.out.printf("📌 Product: %-10s | Price: ₱%-6.2f | Quantity: %-4d\n", p.getName(), p.getPrice(), p.getQuantity());
+            }
+        }
+        System.out.println("--------------------------------------------------");
+    }
+}
+
+class Cashier {
+    private double totalSales;
+    private double cashDrawer;
+
+    public Cashier() {
+        this.cashDrawer = 0; 
+    }
+
+    public void processSale(Product p, int q) {
+        if (p.getQuantity() >= q) {
+            double cost = p.getPrice() * q;
+            totalSales += cost;
+            p.setQuantity(p.getQuantity() - q);
+            cashDrawer += cost;
+            System.out.printf("✅ Purchased %d of %s for ₱%.2f\n", q, p.getName(), cost);
+        } else {
+            System.out.println("❌ Insufficient stock for " + p.getName());
+        }
+    }
+
+    public double getTotalSales() {
+        return totalSales;
+    }
+
+    public double getCashDrawer() {
+        return cashDrawer;
+    }
+
+    public void processCreditCard(double amount) {
+        totalSales += amount;
+        System.out.println("💳 Processed credit card payment of ₱" + amount);
+    }
+}
+
+class ReceiptPrinter {
+    public void printReceipt(String customerName, Product product, int quantity, double total) {
+        System.out.println("\n🧾 --- RECEIPT ---");
+        System.out.println("Customer: " + customerName);
+        System.out.println("Product: " + product.getName());
+        System.out.println("Quantity: " + quantity);
+        System.out.println("Total: ₱" + total);
+        System.out.println("Thank you for shopping with us!");
+        System.out.println("🧾 --- END OF RECEIPT ---\n");
+    }
+}
+
+class CreditCardReader {
+    public boolean processPayment(double amount) {
+        System.out.println("💳 Processing credit card payment of ₱" + amount);
+        return true; 
+    }
+}
+
+class Admin {
+    private String username;
+    private String password;
+
+    public Admin(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public boolean login(String username, String password) {
+        return this.username.equals(username) && this.password.equals(password);
+    }
+}
+
+public class Grocery {
+    public static void main(String[] args) {
+        Inventory i = new Inventory();
+        Cashier c = new Cashier();
+        ReceiptPrinter rp = new ReceiptPrinter();
+        CreditCardReader cdr = new CreditCardReader();
+        Admin ad = new Admin("admin", "password");
+        Scanner sc = new Scanner(System.in);
+
+        i.addProduct("C2", 30, 100);
+        i.addProduct("Gatorade", 35, 100);
+        i.addProduct("Mountain Dew", 35, 100);
+
+        boolean loggedIn = false;
+        boolean exit = false;
+        
+        System.out.println("🛒 Welcome to the Grocery Store! 🛒");
+
+        while (!exit) {
+            if (!loggedIn) {
+                System.out.print("🔑 Enter username: ");
+                String username = sc.nextLine();
+                System.out.print("🔑 Enter password: ");
+                String password = sc.nextLine();
+
+                if (ad.login(username, password)) {
+                    loggedIn = true;
+                    System.out.println("✅ Login successful.");
+                } else {
+                    System.out.println("❌ Invalid credentials.");
+                    continue;
+                }
+            }
+
+            System.out.println("\n=========================");
+            System.out.println("          Menu          ");
+            System.out.println("=========================");
+            System.out.println("1. ➕ Add Stock");
+            System.out.println("2. 📜 View Stock");
+            System.out.println("3. 🔄 Update Stock");
+            System.out.println("4. 🗑️  Remove Stock");
+            System.out.println("5. 🛍️  Purchase Product");
+            System.out.println("6. 💰 View Total Sales");
+            System.out.println("7. 💵 Cash Drawer Balance");
+            System.out.println("8. 🚪 Logout");
+            System.out.print("➡️  Enter your choice: ");
+
+            int choice;
+            if (sc.hasNextInt()) {
+                choice = sc.nextInt();
+                sc.nextLine(); 
+            } else {
+                System.out.println("❌ Invalid input. Please enter a valid number.");
+                sc.next(); 
+                continue;
+            }
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter product name: ");
+                    String name = sc.nextLine();
+                    System.out.print("Enter product price: ");
+                    double price = sc.nextDouble();
+                    System.out.print("Enter product quantity: ");
+                    int quantity = sc.nextInt();
+                    sc.nextLine();
+                    i.addProduct(name, price, quantity);
+                    System.out.println("✅ " + name + " added to inventory.");
+                    break;
+
+                case 2:
+                    i.showInventory();
+                    break;
+
+                case 3:
+                    System.out.print("Enter product name to update: ");
+                    name = sc.nextLine();
+                    System.out.print("Enter new quantity: ");
+                    quantity = sc.nextInt();
+                    sc.nextLine();
+                    i.updateStock(name, quantity);
+                    break;
+
+                case 4:
+                    System.out.print("Enter product name to remove: ");
+                    name = sc.nextLine();
+                    i.removeProduct(name);
+                    break;
+
+                case 5:
+                     System.out.print("Enter your name: ");
+                     String customerName = sc.nextLine();
+                     System.out.print("Enter product name to purchase: ");
+                     String productName = sc.nextLine();
+                     System.out.print("Enter quantity to purchase: ");
+             int qty = sc.nextInt();
+                 sc.nextLine();
+                 Product product = i.findProduct(productName);
+                    if (product != null) {
+                     System.out.print("Select payment method (1: Cash, 2: Credit Card): ");
+                     int paymentMethod = sc.nextInt();
+                     sc.nextLine();
+                     double totalCost = product.getPrice() * qty;
+                         if (paymentMethod == 1) {
+                            c.processSale(product, qty);
+                            rp.printReceipt(customerName, product, qty, totalCost);
+                        } else if (paymentMethod == 2 && cdr.processPayment(totalCost)) {
+                                c.processCreditCard(totalCost); 
+                                c.processSale(product, qty);
+                                rp.printReceipt(customerName, product, qty, totalCost);
+                         } else {
+                            System.out.println("❌ Payment failed.");
+                           }
+                         } else {
+                            System.out.println("❌ Product not found.");
+                          }
+                            break;
+
+                case 6:
+                    System.out.printf("💰 Total Sales: ₱%.2f\n", c.getTotalSales());
+                    break;
+
+                case 7:
+                    System.out.printf("💵 Cash Drawer Balance: ₱%.2f\n", c.getCashDrawer());
+                    break;
+
+                case 8:
+                    loggedIn = false;
+                    System.out.println("✅ Logged out successfully.");
+                    break;
+
+                default:
+                    System.out.println("❌ Invalid choice. Please try again.");
+            }
+        }
+
+        System.out.println("\n👋 Thank you for visiting the Grocery Store! 👋");
+    }
+}
